@@ -1,4 +1,3 @@
-import { getLoginUrl } from "@/const";
 import { trpc } from "@/lib/trpc";
 import { TRPCClientError } from "@trpc/client";
 import { useCallback, useEffect, useMemo } from "react";
@@ -8,9 +7,30 @@ type UseAuthOptions = {
   redirectPath?: string;
 };
 
+// Guvenli getLoginUrl - OAuth env tanimli degilse (GitHub Pages) null doner
+function safeGetLoginUrl(): string | null {
+  try {
+    const oauthPortalUrl = import.meta.env.VITE_OAUTH_PORTAL_URL;
+    if (!oauthPortalUrl) return null;
+    const appId = import.meta.env.VITE_APP_ID || '';
+    const redirectUri = `${window.location.origin}/api/oauth/callback`;
+    const url = new URL(`${oauthPortalUrl}/app-auth`);
+    url.searchParams.set("appId", appId);
+    url.searchParams.set("redirectUri", redirectUri);
+    url.searchParams.set("state", btoa(redirectUri));
+    url.searchParams.set("type", "signIn");
+    return url.toString();
+  } catch {
+    return null;
+  }
+}
+
 export function useAuth(options?: UseAuthOptions) {
-  const { redirectOnUnauthenticated = false, redirectPath = getLoginUrl() } =
-    options ?? {};
+  const {
+    redirectOnUnauthenticated = false,
+    redirectPath,
+  } = options ?? {};
+
   const utils = trpc.useUtils();
 
   const meQuery = trpc.auth.me.useQuery(undefined, {
@@ -34,51 +54,32 @@ export function useAuth(options?: UseAuthOptions) {
       ) {
         return;
       }
-      throw error;
-    } finally {
-      utils.auth.me.setData(undefined, null);
-      await utils.auth.me.invalidate();
+      console.error("[Auth] Logout error:", error);
     }
-  }, [logoutMutation, utils]);
+  }, [logoutMutation]);
 
-  const state = useMemo(() => {
-    localStorage.setItem(
-      "manus-runtime-user-info",
-      JSON.stringify(meQuery.data)
-    );
-    return {
-      user: meQuery.data ?? null,
-      loading: meQuery.isLoading || logoutMutation.isPending,
-      error: meQuery.error ?? logoutMutation.error ?? null,
-      isAuthenticated: Boolean(meQuery.data),
-    };
-  }, [
-    meQuery.data,
-    meQuery.error,
-    meQuery.isLoading,
-    logoutMutation.error,
-    logoutMutation.isPending,
-  ]);
+  const user = useMemo(() => {
+    if (meQuery.data === null) return null;
+    if (!meQuery.data) return undefined;
+    return meQuery.data;
+  }, [meQuery.data]);
 
   useEffect(() => {
     if (!redirectOnUnauthenticated) return;
-    if (meQuery.isLoading || logoutMutation.isPending) return;
-    if (state.user) return;
-    if (typeof window === "undefined") return;
-    if (window.location.pathname === redirectPath) return;
+    if (meQuery.isLoading) return;
+    if (user !== null && user !== undefined) return;
+    if (meQuery.isError === false) return;
 
-    window.location.href = redirectPath
-  }, [
-    redirectOnUnauthenticated,
-    redirectPath,
-    logoutMutation.isPending,
-    meQuery.isLoading,
-    state.user,
-  ]);
+    const target = redirectPath ?? safeGetLoginUrl();
+    if (target) {
+      window.location.href = target;
+    }
+  }, [redirectOnUnauthenticated, redirectPath, meQuery.isLoading, meQuery.isError, user]);
 
   return {
-    ...state,
-    refresh: () => meQuery.refetch(),
+    user,
+    isLoading: meQuery.isLoading,
+    error: meQuery.error,
     logout,
   };
 }
