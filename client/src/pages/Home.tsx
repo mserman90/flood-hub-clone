@@ -99,14 +99,20 @@ export default function Home() {
     });
   }, []);
 
-  // Find nearest station to a place
+  // Find nearest station to a place (within 200km)
   const nearestStationToPlace = placeInfo && stations
-    ? stations.reduce<StationData | null>((nearest, s) => {
-        const dist = getDistanceKm(placeInfo.lat, placeInfo.lon, s.station.latitude, s.station.longitude);
-        if (!nearest) return dist < 100 ? s : null;
-        const nearestDist = getDistanceKm(placeInfo.lat, placeInfo.lon, nearest.station.latitude, nearest.station.longitude);
-        return dist < nearestDist ? s : nearest;
-      }, null)
+    ? (() => {
+        let nearest: StationData | null = null;
+        let minDist = Infinity;
+        for (const s of stations) {
+          const dist = getDistanceKm(placeInfo.lat, placeInfo.lon, s.station.latitude, s.station.longitude);
+          if (dist < minDist) {
+            minDist = dist;
+            nearest = s;
+          }
+        }
+        return minDist <= 200 ? nearest : null;
+      })()
     : null;
 
   // When flood layer is off, hide all markers
@@ -140,6 +146,8 @@ export default function Home() {
           {placeInfo && (
             <PlaceSidePanel
               placeName={placeInfo.name}
+              lat={placeInfo.lat}
+              lon={placeInfo.lon}
               nearestStation={nearestStationToPlace}
               onClose={handleClosePlacePanel}
             />

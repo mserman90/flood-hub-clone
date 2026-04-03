@@ -1442,6 +1442,16 @@
   flex-direction: column;
 }
 
+.place-location-info {
+  padding: 8px 16px;
+  border-bottom: 1px solid #e8eaed;
+}
+
+.place-coords {
+  font-size: 12px;
+  color: #5f6368;
+}
+
 .place-section {
   padding: 16px;
   border-bottom: 1px solid #e8eaed;

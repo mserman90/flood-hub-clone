@@ -4,6 +4,8 @@ import type { StationData, SeverityLevel } from '@/hooks/useMultiStationData';
 
 interface PlaceSidePanelProps {
   placeName: string;
+  lat: number;
+  lon: number;
   nearestStation: StationData | null;
   onClose: () => void;
 }
@@ -38,7 +40,11 @@ function getDistanceKm(lat1: number, lon1: number, lat2: number, lon2: number): 
   return R * c;
 }
 
-export function PlaceSidePanel({ placeName, nearestStation, onClose }: PlaceSidePanelProps) {
+export function PlaceSidePanel({ placeName, lat, lon, nearestStation, onClose }: PlaceSidePanelProps) {
+  const distance = nearestStation
+    ? getDistanceKm(lat, lon, nearestStation.station.latitude, nearestStation.station.longitude)
+    : null;
+
   return (
     <div className="place-side-panel">
       {/* Header */}
@@ -52,10 +58,17 @@ export function PlaceSidePanel({ placeName, nearestStation, onClose }: PlaceSide
         </button>
       </div>
 
+      {/* Location info */}
+      <div className="place-location-info">
+        <div className="place-coords">
+          <span>{lat.toFixed(4)}° K, {lon.toFixed(4)}° D</span>
+        </div>
+      </div>
+
       {/* Nearest gauge section */}
       <div className="place-section">
         <h4 className="place-section-title">
-          <MapPin size={16} color="#5f6368" />
+          <MapPin size={16} color="#4CAF50" />
           En yakın nehir ölçüm istasyonu
         </h4>
 
@@ -63,22 +76,11 @@ export function PlaceSidePanel({ placeName, nearestStation, onClose }: PlaceSide
           <>
             <div className="place-station-info">
               <div className="place-station-name">{nearestStation.station.name}</div>
-              <div className="place-station-distance">
-                {getDistanceKm(
-                  parseFloat(nearestStation.station.latitude.toString()),
-                  parseFloat(nearestStation.station.longitude.toString()),
-                  0, 0
-                ) > 0
-                  ? `~${Math.round(
-                      getDistanceKm(
-                        parseFloat(nearestStation.station.latitude.toString()),
-                        parseFloat(nearestStation.station.longitude.toString()),
-                        0,
-                        0
-                      )
-                    )} km uzaklıkta`
-                  : ''}
-              </div>
+              {distance !== null && (
+                <div className="place-station-distance">
+                  {distance.toFixed(1)} km uzaklıkta
+                </div>
+              )}
               <div className="place-station-severity">
                 <span
                   className="severity-dot"
