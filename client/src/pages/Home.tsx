@@ -1,7 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useAuth } from "@/_core/hooks/useAuth";
 import { FloodMap } from '@/components/FloodMap';
 import { FloodDataPanel } from '@/components/FloodDataPanel';
 import { WaterLevelChart } from '@/components/WaterLevelChart';
+import { trpc } from '@/lib/trpc';
+import { Loader2 } from 'lucide-react';
 
 interface WaterLevelData {
   timestamp: string;
@@ -10,28 +12,15 @@ interface WaterLevelData {
 }
 
 export default function Home() {
-  const [waterLevelData, setWaterLevelData] = useState<WaterLevelData[]>([]);
+  const { user } = useAuth();
 
-  useEffect(() => {
-    // Generate mock data for the last 24 hours
-    const now = new Date();
-    const mockData: WaterLevelData[] = [];
+  // Fetch flood data from tRPC backend
+  const { data: floodData, isLoading, error } = trpc.flood.getAnkaraFloodData.useQuery();
 
-    for (let i = 23; i >= 0; i--) {
-      const time = new Date(now.getTime() - i * 60 * 60 * 1000);
-      const hour = time.getHours().toString().padStart(2, '0');
-      const baseLevel = 2.3 + Math.sin(i / 4) * 0.5;
-      const forecast = baseLevel + 0.15 + Math.sin(i / 3) * 0.3;
-
-      mockData.push({
-        timestamp: `${hour}:00`,
-        waterLevel: parseFloat(baseLevel.toFixed(2)),
-        forecast: i < 12 ? undefined : parseFloat(forecast.toFixed(2)),
-      });
-    }
-
-    setWaterLevelData(mockData);
-  }, []);
+  const waterLevelData: WaterLevelData[] = floodData?.data?.waterLevelHistory || [];
+  const currentWaterLevel = floodData?.data?.currentWaterLevel || 2.45;
+  const forecastedWaterLevel = floodData?.data?.forecastedWaterLevel || 2.60;
+  const riskLevel = floodData?.data?.riskLevel || 'low';
 
   return (
     <div className="min-h-screen bg-background">
@@ -52,47 +41,73 @@ export default function Home() {
           <div className="font-body text-xs text-slate-600">
             <p>Ankara Bölgesi</p>
             <p>38.6253°N, 35.7123°E</p>
+            {user && <p className="text-blue-600">Hoş geldiniz, {user.name}</p>}
           </div>
         </div>
       </header>
 
       {/* Main Content */}
       <main className="container py-6">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Left Panel - Data Information */}
-          <div className="lg:col-span-1">
-            <FloodDataPanel
-              locationName="Ankara"
-              currentWaterLevel={2.45}
-              forecastedWaterLevel={2.60}
-              riskLevel="low"
-              lastUpdated={new Date()}
-            />
+        {isLoading ? (
+          <div className="flex flex-col items-center justify-center gap-4 py-12">
+            <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+            <p className="font-body text-slate-600">Sel verileri yükleniyor...</p>
           </div>
+        ) : (
+          <>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              {/* Left Panel - Data Information */}
+              <div className="lg:col-span-1">
+                <FloodDataPanel
+                  locationName="Ankara"
+                  currentWaterLevel={currentWaterLevel}
+                  forecastedWaterLevel={forecastedWaterLevel}
+                  riskLevel={riskLevel as 'low' | 'medium' | 'high' | 'critical'}
+                  lastUpdated={floodData?.data?.lastUpdated ? new Date(floodData.data.lastUpdated) : new Date()}
+                />
+              </div>
 
-          {/* Center - Map */}
-          <div className="lg:col-span-2">
-            <FloodMap
-              latitude={38.625278384355575}
-              longitude={35.71231125704324}
-              zoom={6.6389999971389795}
-            />
-          </div>
-        </div>
+              {/* Center - Map */}
+              <div className="lg:col-span-2">
+                <FloodMap
+                  latitude={38.625278384355575}
+                  longitude={35.71231125704324}
+                  zoom={6.6389999971389795}
+                />
+              </div>
+            </div>
 
-        {/* Bottom - Chart */}
-        <div className="mt-6">
-          <WaterLevelChart data={waterLevelData} title="Su Seviyesi Geçmişi (Son 24 Saat)" />
-        </div>
+            {/* Bottom - Chart */}
+            <div className="mt-6">
+              <WaterLevelChart data={waterLevelData} title="Su Seviyesi Geçmişi (Son 24 Saat)" />
+            </div>
 
-        {/* Footer Info */}
-        <div className="mt-8 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-          <p className="font-body text-sm text-blue-900">
-            <strong>Bilgilendirme:</strong> Sel koşulları yaklaşıktır ve bilgilendirme amaçlıdır. 
-            Daha fazla bilgi için resmi kaynakları kontrol edin. Bu sistem Google AI modelleri tarafından 
-            sağlanan tahminleri kullanmaktadır.
-          </p>
-        </div>
+            {error && (
+              <div className="mt-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                <p className="font-body text-sm text-yellow-900">
+                  <strong>Uyarı:</strong> Gerçek veriler yüklenemedi, mock veriler gösterilmektedir.
+                </p>
+              </div>
+            )}
+
+            {floodData?.data?.source === 'mock' && (
+              <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                <p className="font-body text-sm text-blue-900">
+                  <strong>Bilgilendirme:</strong> Bu sistem şu anda demo amaçlı mock veriler kullanmaktadır.
+                  Gerçek sel tahmin verileri için Open-Meteo API veya Google Flood Forecasting API entegrasyonu yapılabilir.
+                </p>
+              </div>
+            )}
+
+            {/* Footer Info */}
+            <div className="mt-8 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+              <p className="font-body text-sm text-blue-900">
+                <strong>Bilgilendirme:</strong> Sel koşulları yaklaşıktır ve bilgilendirme amaçlıdır.
+                Daha fazla bilgi için resmi kaynakları kontrol edin.
+              </p>
+            </div>
+          </>
+        )}
       </main>
     </div>
   );
