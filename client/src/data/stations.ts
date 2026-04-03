@@ -5,6 +5,8 @@ export interface Station {
   longitude: number;
   basinSize: number; // km²
   source: string;
+  confidence: 'high' | 'low';
+  inundationMapAvailable: 'available' | 'not_available' | 'sometimes';
 }
 
 // Realistic station points around Ankara and central Turkey region
@@ -16,6 +18,8 @@ export const STATIONS: Station[] = [
     longitude: 32.86,
     basinSize: 1245,
     source: 'HYBAS',
+    confidence: 'high',
+    inundationMapAvailable: 'available',
   },
   {
     id: 'hybas_2120645120',
@@ -24,6 +28,8 @@ export const STATIONS: Station[] = [
     longitude: 33.52,
     basinSize: 3420,
     source: 'HYBAS',
+    confidence: 'high',
+    inundationMapAvailable: 'available',
   },
   {
     id: 'hybas_2120645230',
@@ -32,6 +38,8 @@ export const STATIONS: Station[] = [
     longitude: 30.52,
     basinSize: 2180,
     source: 'HYBAS',
+    confidence: 'high',
+    inundationMapAvailable: 'sometimes',
   },
   {
     id: 'hybas_2120645340',
@@ -40,6 +48,8 @@ export const STATIONS: Station[] = [
     longitude: 33.62,
     basinSize: 4560,
     source: 'HYBAS',
+    confidence: 'high',
+    inundationMapAvailable: 'available',
   },
   {
     id: 'hybas_2120645450',
@@ -48,6 +58,8 @@ export const STATIONS: Station[] = [
     longitude: 31.61,
     basinSize: 1890,
     source: 'HYBAS',
+    confidence: 'high',
+    inundationMapAvailable: 'available',
   },
   {
     id: 'hybas_2120645560',
@@ -56,6 +68,8 @@ export const STATIONS: Station[] = [
     longitude: 34.80,
     basinSize: 2750,
     source: 'HYBAS',
+    confidence: 'low',
+    inundationMapAvailable: 'not_available',
   },
   {
     id: 'hybas_2120645670',
@@ -64,6 +78,8 @@ export const STATIONS: Station[] = [
     longitude: 29.98,
     basinSize: 1560,
     source: 'HYBAS',
+    confidence: 'high',
+    inundationMapAvailable: 'sometimes',
   },
   {
     id: 'hybas_2120645780',
@@ -72,6 +88,8 @@ export const STATIONS: Station[] = [
     longitude: 34.17,
     basinSize: 980,
     source: 'HYBAS',
+    confidence: 'low',
+    inundationMapAvailable: 'not_available',
   },
   {
     id: 'hybas_2120645890',
@@ -80,6 +98,8 @@ export const STATIONS: Station[] = [
     longitude: 31.17,
     basinSize: 2340,
     source: 'HYBAS',
+    confidence: 'high',
+    inundationMapAvailable: 'available',
   },
   {
     id: 'hybas_2120646000',
@@ -88,6 +108,8 @@ export const STATIONS: Station[] = [
     longitude: 37.02,
     basinSize: 5120,
     source: 'HYBAS',
+    confidence: 'high',
+    inundationMapAvailable: 'available',
   },
   {
     id: 'hybas_2120646110',
@@ -96,6 +118,8 @@ export const STATIONS: Station[] = [
     longitude: 36.55,
     basinSize: 1430,
     source: 'HYBAS',
+    confidence: 'low',
+    inundationMapAvailable: 'not_available',
   },
   {
     id: 'hybas_2120646220',
@@ -104,6 +128,8 @@ export const STATIONS: Station[] = [
     longitude: 32.15,
     basinSize: 870,
     source: 'HYBAS',
+    confidence: 'low',
+    inundationMapAvailable: 'sometimes',
   },
   {
     id: 'hybas_2120646330',
@@ -112,6 +138,8 @@ export const STATIONS: Station[] = [
     longitude: 30.00,
     basinSize: 1670,
     source: 'HYBAS',
+    confidence: 'high',
+    inundationMapAvailable: 'available',
   },
   {
     id: 'hybas_2120646440',
@@ -120,6 +148,8 @@ export const STATIONS: Station[] = [
     longitude: 35.83,
     basinSize: 3890,
     source: 'HYBAS',
+    confidence: 'high',
+    inundationMapAvailable: 'available',
   },
   {
     id: 'hybas_2120646550',
@@ -128,6 +158,8 @@ export const STATIONS: Station[] = [
     longitude: 33.78,
     basinSize: 1120,
     source: 'HYBAS',
+    confidence: 'low',
+    inundationMapAvailable: 'not_available',
   },
   {
     id: 'hybas_2120646660',
@@ -136,6 +168,8 @@ export const STATIONS: Station[] = [
     longitude: 31.18,
     basinSize: 1450,
     source: 'HYBAS',
+    confidence: 'low',
+    inundationMapAvailable: 'sometimes',
   },
   {
     id: 'hybas_2120646770',
@@ -144,6 +178,8 @@ export const STATIONS: Station[] = [
     longitude: 34.71,
     basinSize: 2100,
     source: 'HYBAS',
+    confidence: 'low',
+    inundationMapAvailable: 'not_available',
   },
   {
     id: 'hybas_2120646880',
@@ -152,5 +188,7 @@ export const STATIONS: Station[] = [
     longitude: 36.98,
     basinSize: 2560,
     source: 'HYBAS',
+    confidence: 'high',
+    inundationMapAvailable: 'available',
   },
 ];

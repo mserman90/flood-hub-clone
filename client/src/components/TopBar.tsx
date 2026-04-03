@@ -1,11 +1,13 @@
-import { Search, HelpCircle, Settings, Bell } from 'lucide-react';
+import { useState, useRef, useEffect } from 'react';
+import { Search, HelpCircle, Settings, Bell, X, Loader2 } from 'lucide-react';
 import type { GDACSAlertLevel } from '@/hooks/useAlertFeeds';
+import { useGeocoding, type GeocodingResult } from '@/hooks/useGeocoding';
 
 interface TopBarProps {
-  onSearch?: (query: string) => void;
   alertCount?: number;
   highestAlertLevel?: GDACSAlertLevel | null;
   onAlertClick?: () => void;
+  onPlaceSelect?: (result: GeocodingResult) => void;
 }
 
 const BADGE_COLORS: Record<GDACSAlertLevel, string> = {
@@ -14,7 +16,41 @@ const BADGE_COLORS: Record<GDACSAlertLevel, string> = {
   Green: '#388E3C',
 };
 
-export function TopBar({ onSearch, alertCount = 0, highestAlertLevel, onAlertClick }: TopBarProps) {
+export function TopBar({ alertCount = 0, highestAlertLevel, onAlertClick, onPlaceSelect }: TopBarProps) {
+  const [query, setQuery] = useState('');
+  const [showDropdown, setShowDropdown] = useState(false);
+  const { results, isLoading, clear } = useGeocoding(query);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    setShowDropdown(results.length > 0 || (isLoading && query.length >= 2));
+  }, [results, isLoading, query]);
+
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setShowDropdown(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  function handleSelect(result: GeocodingResult) {
+    setQuery(result.display_name.split(',')[0]);
+    setShowDropdown(false);
+    clear();
+    onPlaceSelect?.(result);
+  }
+
+  function handleClear() {
+    setQuery('');
+    setShowDropdown(false);
+    clear();
+    inputRef.current?.focus();
+  }
+
   return (
     <header className="top-bar">
       {/* Logo */}
@@ -31,14 +67,49 @@ export function TopBar({ onSearch, alertCount = 0, highestAlertLevel, onAlertCli
       </div>
 
       {/* Search bar */}
-      <div className="top-bar-search">
-        <Search size={16} className="search-icon" />
-        <input
-          type="text"
-          placeholder="Bir konum için arama yapın"
-          className="search-input"
-          onChange={e => onSearch?.(e.target.value)}
-        />
+      <div className="top-bar-search-wrapper" ref={dropdownRef}>
+        <div className="top-bar-search">
+          <Search size={16} className="search-icon" />
+          <input
+            ref={inputRef}
+            type="text"
+            placeholder="Bir konum için arama yapın"
+            className="search-input"
+            value={query}
+            onChange={e => setQuery(e.target.value)}
+            onFocus={() => results.length > 0 && setShowDropdown(true)}
+          />
+          {query && (
+            <button className="search-clear-btn" onClick={handleClear} aria-label="Temizle">
+              <X size={14} />
+            </button>
+          )}
+        </div>
+
+        {/* Autocomplete dropdown */}
+        {showDropdown && (
+          <div className="search-dropdown">
+            {isLoading && (
+              <div className="search-dropdown-loading">
+                <Loader2 size={16} className="animate-spin" />
+                <span>Aranıyor...</span>
+              </div>
+            )}
+            {!isLoading && results.length === 0 && query.length >= 2 && (
+              <div className="search-dropdown-empty">Sonuç bulunamadı</div>
+            )}
+            {results.map(result => (
+              <button
+                key={result.place_id}
+                className="search-dropdown-item"
+                onClick={() => handleSelect(result)}
+              >
+                <Search size={14} className="search-dropdown-icon" />
+                <span className="search-dropdown-text">{result.display_name}</span>
+              </button>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Right actions */}

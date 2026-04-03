@@ -2,14 +2,30 @@ import { useState, useCallback, useRef } from 'react';
 import { TopBar } from '@/components/TopBar';
 import { FloodMapLeaflet, type FloodMapHandle } from '@/components/FloodMapLeaflet';
 import { StationDetailPanel } from '@/components/StationDetailPanel';
+import { PlaceSidePanel } from '@/components/PlaceSidePanel';
 import { OptionsPanel } from '@/components/OptionsPanel';
 import { BottomWarningBar } from '@/components/BottomWarningBar';
 import { AlertPanel } from '@/components/AlertPanel';
 import { useMultiStationData, type StationData, type SeverityLevel } from '@/hooks/useMultiStationData';
 import { useAlertFeeds } from '@/hooks/useAlertFeeds';
+import type { GeocodingResult } from '@/hooks/useGeocoding';
 import { Loader2 } from 'lucide-react';
 
 const ALL_SEVERITIES = new Set<SeverityLevel>(['normal', 'uyari', 'tehlike', 'asiri', 'veri_yok']);
+
+function getDistanceKm(lat1: number, lon1: number, lat2: number, lon2: number): number {
+  const R = 6371;
+  const dLat = ((lat2 - lat1) * Math.PI) / 180;
+  const dLon = ((lon2 - lon1) * Math.PI) / 180;
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos((lat1 * Math.PI) / 180) *
+      Math.cos((lat2 * Math.PI) / 180) *
+      Math.sin(dLon / 2) *
+      Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
+}
 
 export default function Home() {
   const { data: stations, isLoading, error } = useMultiStationData();
@@ -22,6 +38,9 @@ export default function Home() {
   const [optionsPanelOpen, setOptionsPanelOpen] = useState(false);
   const [alertPanelOpen, setAlertPanelOpen] = useState(false);
 
+  // Place panel state
+  const [placeInfo, setPlaceInfo] = useState<{ name: string; lat: number; lon: number } | null>(null);
+
   // Map state
   const [mapType, setMapType] = useState<'harita' | 'karma'>('harita');
   const [visibleSeverities, setVisibleSeverities] = useState<Set<SeverityLevel>>(new Set(ALL_SEVERITIES));
@@ -31,13 +50,19 @@ export default function Home() {
   const [showExtendedCoverage, setShowExtendedCoverage] = useState(false);
   const [showSignificantEvents, setShowSignificantEvents] = useState(false);
   const [showFloodProbability, setShowFloodProbability] = useState(false);
+  const [showInundationHistory, setShowInundationHistory] = useState(false);
 
   const handleStationClick = useCallback((stationData: StationData) => {
     setSelectedStation(stationData);
+    setPlaceInfo(null);
   }, []);
 
   const handleCloseDetail = useCallback(() => {
     setSelectedStation(null);
+  }, []);
+
+  const handleClosePlacePanel = useCallback(() => {
+    setPlaceInfo(null);
   }, []);
 
   const handleToggleSeverity = useCallback((severity: SeverityLevel) => {
@@ -61,8 +86,34 @@ export default function Home() {
     setAlertPanelOpen(prev => !prev);
   }, []);
 
+  const handlePlaceSelect = useCallback((result: GeocodingResult) => {
+    const lat = parseFloat(result.lat);
+    const lon = parseFloat(result.lon);
+
+    mapRef.current?.flyTo(lat, lon, 12);
+    setSelectedStation(null);
+    setPlaceInfo({
+      name: result.display_name.split(',')[0],
+      lat,
+      lon,
+    });
+  }, []);
+
+  // Find nearest station to a place
+  const nearestStationToPlace = placeInfo && stations
+    ? stations.reduce<StationData | null>((nearest, s) => {
+        const dist = getDistanceKm(placeInfo.lat, placeInfo.lon, s.station.latitude, s.station.longitude);
+        if (!nearest) return dist < 100 ? s : null;
+        const nearestDist = getDistanceKm(placeInfo.lat, placeInfo.lon, nearest.station.latitude, nearest.station.longitude);
+        return dist < nearestDist ? s : nearest;
+      }, null)
+    : null;
+
   // When flood layer is off, hide all markers
   const effectiveVisibleSeverities = showFloodLayer ? visibleSeverities : new Set<SeverityLevel>();
+
+  const showLeftStationPanel = selectedStation && !placeInfo;
+  const showLeftPlacePanel = placeInfo && !selectedStation;
 
   return (
     <div className="flood-hub-app">
@@ -70,15 +121,27 @@ export default function Home() {
         alertCount={alertFeeds.totalAlertCount}
         highestAlertLevel={alertFeeds.highestAlertLevel}
         onAlertClick={handleToggleAlertPanel}
+        onPlaceSelect={handlePlaceSelect}
       />
 
       <div className="flood-hub-main">
         {/* Left panel - station detail */}
-        <div className={`left-panel ${selectedStation ? 'left-panel-open' : 'left-panel-closed'}`}>
+        <div className={`left-panel ${showLeftStationPanel ? 'left-panel-open' : 'left-panel-closed'}`}>
           {selectedStation && (
             <StationDetailPanel
               stationData={selectedStation}
               onClose={handleCloseDetail}
+            />
+          )}
+        </div>
+
+        {/* Left panel - place panel */}
+        <div className={`left-panel ${showLeftPlacePanel ? 'left-panel-open' : 'left-panel-closed'}`}>
+          {placeInfo && (
+            <PlaceSidePanel
+              placeName={placeInfo.name}
+              nearestStation={nearestStationToPlace}
+              onClose={handleClosePlacePanel}
             />
           )}
         </div>
@@ -111,8 +174,12 @@ export default function Home() {
               onStationClick={handleStationClick}
               visibleSeverities={effectiveVisibleSeverities}
               mapType={mapType}
+              onMapTypeChange={setMapType}
               gdacsAlerts={alertFeeds.gdacs}
               showAlertMarkers={showSignificantEvents}
+              showExtendedCoverage={showExtendedCoverage}
+              showFloodProbability={showFloodProbability}
+              showInundationHistory={showInundationHistory}
             />
           )}
         </div>
@@ -121,8 +188,6 @@ export default function Home() {
         <OptionsPanel
           isOpen={optionsPanelOpen}
           onToggle={() => setOptionsPanelOpen(!optionsPanelOpen)}
-          mapType={mapType}
-          onMapTypeChange={setMapType}
           visibleSeverities={visibleSeverities}
           onToggleSeverity={handleToggleSeverity}
           showFloodLayer={showFloodLayer}
@@ -133,6 +198,8 @@ export default function Home() {
           onToggleSignificantEvents={setShowSignificantEvents}
           showFloodProbability={showFloodProbability}
           onToggleFloodProbability={setShowFloodProbability}
+          showInundationHistory={showInundationHistory}
+          onToggleInundationHistory={setShowInundationHistory}
         />
       </div>
 

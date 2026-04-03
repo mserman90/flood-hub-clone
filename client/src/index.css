@@ -1271,3 +1271,471 @@
 .animate-pulse-subtle {
   animation: pulse-subtle 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
+
+/* ======================================================
+   New Feature Styles
+   ====================================================== */
+
+/* ---- Confidence Badge ---- */
+
+.confidence-badge-container {
+  margin-bottom: 10px;
+}
+
+.confidence-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 16px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.confidence-high {
+  background: #e8f0fe;
+  color: #1967d2;
+}
+
+.confidence-low {
+  background: #fce8e6;
+  color: #c5221f;
+}
+
+/* ---- Basin View Button ---- */
+
+.basin-view-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: none;
+  background: transparent;
+  color: #5f6368;
+  margin-left: 6px;
+  vertical-align: middle;
+  transition: background 0.15s;
+}
+
+.basin-view-btn:hover {
+  background: #f1f3f4;
+  color: #1967d2;
+}
+
+/* ---- Gauge Thresholds Section ---- */
+
+.gauge-thresholds-section {
+  border-bottom: 1px solid #e8eaed;
+}
+
+.gauge-thresholds-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 12px 16px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  color: #3c4043;
+  transition: background 0.15s;
+}
+
+.gauge-thresholds-toggle:hover {
+  background: #f8f9fa;
+}
+
+.gauge-thresholds-title {
+  font-family: 'Google Sans', 'Roboto', sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  color: #202124;
+}
+
+.gauge-thresholds-content {
+  padding: 0 16px 14px;
+}
+
+.gauge-thresholds-unit {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  margin-bottom: 12px;
+}
+
+.gauge-thresholds-unit-label {
+  color: #5f6368;
+}
+
+.gauge-thresholds-unit-value {
+  color: #202124;
+  font-weight: 500;
+}
+
+.gauge-thresholds-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px;
+  text-align: center;
+  margin-bottom: 8px;
+}
+
+.gauge-threshold-col {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.gauge-threshold-label {
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.gauge-threshold-value {
+  font-size: 16px;
+  font-weight: 600;
+  color: #202124;
+}
+
+.gauge-thresholds-bar {
+  display: flex;
+  height: 6px;
+  border-radius: 3px;
+  overflow: hidden;
+  gap: 2px;
+}
+
+.gauge-bar-segment {
+  flex: 1;
+  border-radius: 3px;
+}
+
+/* ---- Google Alert Link ---- */
+
+.google-alert-link-section {
+  padding: 8px 16px;
+  border-bottom: 1px solid #e8eaed;
+}
+
+.google-alert-link {
+  font-size: 13px;
+  color: #1a73e8;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.google-alert-link:hover {
+  text-decoration: underline;
+}
+
+/* ---- Place Side Panel ---- */
+
+.place-side-panel {
+  height: 100%;
+  width: 100%;
+  background: #fff;
+  overflow-y: auto;
+  border-right: 1px solid #dadce0;
+  display: flex;
+  flex-direction: column;
+}
+
+.place-section {
+  padding: 16px;
+  border-bottom: 1px solid #e8eaed;
+}
+
+.place-section-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: 'Google Sans', 'Roboto', sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  color: #202124;
+  margin-bottom: 12px;
+}
+
+.place-station-info {
+  margin-bottom: 12px;
+}
+
+.place-station-name {
+  font-size: 14px;
+  font-weight: 500;
+  color: #202124;
+  margin-bottom: 4px;
+}
+
+.place-station-distance {
+  font-size: 12px;
+  color: #5f6368;
+  margin-bottom: 6px;
+}
+
+.place-station-severity {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: #3c4043;
+}
+
+.place-discharge-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 16px;
+  border-top: 1px solid #e8eaed;
+}
+
+.place-no-data {
+  padding: 24px 0;
+  text-align: center;
+  color: #5f6368;
+  font-size: 13px;
+}
+
+.place-side-panel::-webkit-scrollbar {
+  width: 6px;
+}
+
+.place-side-panel::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.place-side-panel::-webkit-scrollbar-thumb {
+  background: #dadce0;
+  border-radius: 3px;
+}
+
+/* ---- Search Dropdown ---- */
+
+.top-bar-search-wrapper {
+  position: relative;
+  flex: 1;
+  max-width: 480px;
+}
+
+.search-clear-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: none;
+  background: transparent;
+  color: #5f6368;
+  flex-shrink: 0;
+}
+
+.search-clear-btn:hover {
+  background: #e8eaed;
+}
+
+.search-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  margin-top: 4px;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(32, 33, 36, 0.28);
+  z-index: 2000;
+  overflow: hidden;
+  max-height: 320px;
+  overflow-y: auto;
+}
+
+.search-dropdown-loading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  color: #5f6368;
+  font-size: 13px;
+}
+
+.search-dropdown-empty {
+  padding: 16px;
+  text-align: center;
+  color: #5f6368;
+  font-size: 13px;
+}
+
+.search-dropdown-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  width: 100%;
+  padding: 10px 16px;
+  border: none;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.12s;
+  font-family: 'Roboto', sans-serif;
+}
+
+.search-dropdown-item:hover {
+  background: #f1f3f4;
+}
+
+.search-dropdown-icon {
+  color: #5f6368;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.search-dropdown-text {
+  font-size: 13px;
+  color: #202124;
+  line-height: 1.4;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+/* ---- Map Type Overlay ---- */
+
+.map-container-wrapper {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.map-type-overlay {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  z-index: 1000;
+  display: flex;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  background: #fff;
+}
+
+.map-type-overlay-btn {
+  padding: 6px 16px;
+  border: none;
+  background: #fff;
+  font-size: 13px;
+  font-family: 'Roboto', sans-serif;
+  color: #3c4043;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  white-space: nowrap;
+}
+
+.map-type-overlay-btn:hover {
+  background: #f1f3f4;
+}
+
+.map-type-overlay-active {
+  background: #e8f0fe !important;
+  color: #1967d2;
+  font-weight: 500;
+}
+
+/* ---- Hex Cluster ---- */
+
+.hex-cluster-wrapper {
+  background: transparent !important;
+  border: none !important;
+}
+
+.hex-cluster {
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: 'Roboto', sans-serif;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+}
+
+.station-dot-wrapper {
+  background: transparent !important;
+  border: none !important;
+}
+
+.station-cluster-dot {
+  border-radius: 50%;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+}
+
+/* ---- Inundation Overlay ---- */
+
+.inundation-overlay {
+  pointer-events: none;
+}
+
+/* ---- Options Panel Enhancements ---- */
+
+.options-group-title {
+  font-family: 'Google Sans', 'Roboto', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  color: #5f6368;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 12px;
+}
+
+.options-subsection {
+  margin-bottom: 12px;
+}
+
+.options-subsection:last-child {
+  margin-bottom: 0;
+}
+
+.inundation-legend {
+  margin-top: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.toggle-label-icon {
+  display: inline-flex;
+  align-items: center;
+  margin-left: 6px;
+  color: #5f6368;
+  vertical-align: middle;
+}
+
+.info-icon-tooltip {
+  display: inline-flex;
+  cursor: help;
+}
+
+.refresh-icon {
+  color: #5f6368;
+}
+
+/* ---- MarkerCluster override (hide default styles) ---- */
+
+.marker-cluster-small,
+.marker-cluster-medium,
+.marker-cluster-large {
+  background: transparent !important;
+}
+
+.marker-cluster-small div,
+.marker-cluster-medium div,
+.marker-cluster-large div {
+  background: transparent !important;
+}
