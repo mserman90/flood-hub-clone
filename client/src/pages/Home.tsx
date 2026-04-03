@@ -1,20 +1,26 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import { TopBar } from '@/components/TopBar';
-import { FloodMapLeaflet } from '@/components/FloodMapLeaflet';
+import { FloodMapLeaflet, type FloodMapHandle } from '@/components/FloodMapLeaflet';
 import { StationDetailPanel } from '@/components/StationDetailPanel';
 import { OptionsPanel } from '@/components/OptionsPanel';
 import { BottomWarningBar } from '@/components/BottomWarningBar';
+import { AlertPanel } from '@/components/AlertPanel';
 import { useMultiStationData, type StationData, type SeverityLevel } from '@/hooks/useMultiStationData';
+import { useAlertFeeds } from '@/hooks/useAlertFeeds';
 import { Loader2 } from 'lucide-react';
 
 const ALL_SEVERITIES = new Set<SeverityLevel>(['normal', 'uyari', 'tehlike', 'asiri', 'veri_yok']);
 
 export default function Home() {
   const { data: stations, isLoading, error } = useMultiStationData();
+  const alertFeeds = useAlertFeeds();
+
+  const mapRef = useRef<FloodMapHandle>(null);
 
   // Panel state
   const [selectedStation, setSelectedStation] = useState<StationData | null>(null);
   const [optionsPanelOpen, setOptionsPanelOpen] = useState(false);
+  const [alertPanelOpen, setAlertPanelOpen] = useState(false);
 
   // Map state
   const [mapType, setMapType] = useState<'harita' | 'karma'>('harita');
@@ -46,12 +52,25 @@ export default function Home() {
     });
   }, []);
 
+  const handleAlertClick = useCallback((lat: number, lon: number) => {
+    mapRef.current?.flyTo(lat, lon, 8);
+    setAlertPanelOpen(false);
+  }, []);
+
+  const handleToggleAlertPanel = useCallback(() => {
+    setAlertPanelOpen(prev => !prev);
+  }, []);
+
   // When flood layer is off, hide all markers
   const effectiveVisibleSeverities = showFloodLayer ? visibleSeverities : new Set<SeverityLevel>();
 
   return (
     <div className="flood-hub-app">
-      <TopBar />
+      <TopBar
+        alertCount={alertFeeds.totalAlertCount}
+        highestAlertLevel={alertFeeds.highestAlertLevel}
+        onAlertClick={handleToggleAlertPanel}
+      />
 
       <div className="flood-hub-main">
         {/* Left panel - station detail */}
@@ -63,6 +82,15 @@ export default function Home() {
             />
           )}
         </div>
+
+        {/* Alert panel - left side */}
+        <AlertPanel
+          isOpen={alertPanelOpen}
+          onClose={() => setAlertPanelOpen(false)}
+          alerts={alertFeeds.allAlerts}
+          isLoading={alertFeeds.isLoading}
+          onAlertClick={handleAlertClick}
+        />
 
         {/* Map area */}
         <div className="map-area">
@@ -77,11 +105,14 @@ export default function Home() {
             </div>
           ) : (
             <FloodMapLeaflet
+              ref={mapRef}
               stations={stations || []}
               selectedStationId={selectedStation?.station.id ?? null}
               onStationClick={handleStationClick}
               visibleSeverities={effectiveVisibleSeverities}
               mapType={mapType}
+              gdacsAlerts={alertFeeds.gdacs}
+              showAlertMarkers={showSignificantEvents}
             />
           )}
         </div>
@@ -105,7 +136,7 @@ export default function Home() {
         />
       </div>
 
-      <BottomWarningBar />
+      <BottomWarningBar nearTurkeyHighAlerts={alertFeeds.nearTurkeyHighAlerts} />
     </div>
   );
 }

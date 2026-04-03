@@ -1,10 +1,20 @@
-import { Search, HelpCircle, Settings } from 'lucide-react';
+import { Search, HelpCircle, Settings, Bell } from 'lucide-react';
+import type { GDACSAlertLevel } from '@/hooks/useAlertFeeds';
 
 interface TopBarProps {
   onSearch?: (query: string) => void;
+  alertCount?: number;
+  highestAlertLevel?: GDACSAlertLevel | null;
+  onAlertClick?: () => void;
 }
 
-export function TopBar({ onSearch }: TopBarProps) {
+const BADGE_COLORS: Record<GDACSAlertLevel, string> = {
+  Red: '#D32F2F',
+  Orange: '#F57C00',
+  Green: '#388E3C',
+};
+
+export function TopBar({ onSearch, alertCount = 0, highestAlertLevel, onAlertClick }: TopBarProps) {
   return (
     <header className="top-bar">
       {/* Logo */}
@@ -33,6 +43,23 @@ export function TopBar({ onSearch }: TopBarProps) {
 
       {/* Right actions */}
       <div className="top-bar-actions">
+        <button
+          className="action-btn alert-bell-btn"
+          aria-label="Uyarılar"
+          onClick={onAlertClick}
+        >
+          <Bell size={20} />
+          {alertCount > 0 && (
+            <span
+              className="alert-badge"
+              style={{
+                background: highestAlertLevel ? BADGE_COLORS[highestAlertLevel] : '#D32F2F',
+              }}
+            >
+              {alertCount > 99 ? '99+' : alertCount}
+            </span>
+          )}
+        </button>
         <button className="action-btn" aria-label="Yardım">
           <HelpCircle size={20} />
         </button>
