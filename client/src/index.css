@@ -195,7 +195,8 @@
   padding: 0 12px;
   background: #fff;
   border-bottom: 1px solid #dadce0;
-  z-index: 100;
+  z-index: 2000;
+  position: relative;
   gap: 12px;
 }
 
@@ -289,7 +290,7 @@
   left: 0;
   height: 100%;
   width: 380px;
-  z-index: 1000;
+  z-index: 1100;
   transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
   overflow: hidden;
 }
