@@ -8,7 +8,14 @@ import App from "./App";
 import { getLoginUrl } from "./const";
 import "./index.css";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: false,
+      // GitHub Pages'te backend olmadigi icin hatalar sessizce yutulur
+    },
+  },
+});
 
 const redirectToLoginIfUnauthorized = (error: unknown) => {
   if (!(error instanceof TRPCClientError)) return;
@@ -37,10 +44,15 @@ queryClient.getMutationCache().subscribe(event => {
   }
 });
 
+// GitHub Pages'te backend olmadigi icin tam URL kullan (Invalid URL hatasini onler)
+const API_BASE_URL = typeof window !== 'undefined'
+  ? `${window.location.origin}/api/trpc`
+  : '/api/trpc';
+
 const trpcClient = trpc.createClient({
   links: [
     httpBatchLink({
-      url: "/api/trpc",
+      url: API_BASE_URL,
       transformer: superjson,
       fetch(input, init) {
         return globalThis.fetch(input, {
