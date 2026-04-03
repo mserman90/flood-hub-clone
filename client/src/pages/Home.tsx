@@ -2,25 +2,19 @@ import { useAuth } from "@/_core/hooks/useAuth";
 import { FloodMap } from '@/components/FloodMap';
 import { FloodDataPanel } from '@/components/FloodDataPanel';
 import { WaterLevelChart } from '@/components/WaterLevelChart';
-import { trpc } from '@/lib/trpc';
+import { useFloodData } from '@/hooks/useFloodData';
 import { Loader2 } from 'lucide-react';
-
-interface WaterLevelData {
-  timestamp: string;
-  waterLevel: number;
-  forecast?: number;
-}
 
 export default function Home() {
   const { user } = useAuth();
 
-  // Fetch flood data from tRPC backend
-  const { data: floodData, isLoading, error } = trpc.flood.getAnkaraFloodData.useQuery();
+  // Fetch flood data: tries tRPC backend first, falls back to direct Open-Meteo API
+  const { data: floodData, isLoading, error, source } = useFloodData();
 
-  const waterLevelData: WaterLevelData[] = floodData?.data?.waterLevelHistory || [];
-  const currentWaterLevel = floodData?.data?.currentWaterLevel || 2.45;
-  const forecastedWaterLevel = floodData?.data?.forecastedWaterLevel || 2.60;
-  const riskLevel = floodData?.data?.riskLevel || 'low';
+  const waterLevelData = floodData?.waterLevelHistory || [];
+  const currentWaterLevel = floodData?.currentWaterLevel || 0;
+  const forecastedWaterLevel = floodData?.forecastedWaterLevel || 0;
+  const riskLevel = floodData?.riskLevel || 'low';
 
   return (
     <div className="min-h-screen bg-background">
@@ -63,7 +57,7 @@ export default function Home() {
                   currentWaterLevel={currentWaterLevel}
                   forecastedWaterLevel={forecastedWaterLevel}
                   riskLevel={riskLevel as 'low' | 'medium' | 'high' | 'critical'}
-                  lastUpdated={floodData?.data?.lastUpdated ? new Date(floodData.data.lastUpdated) : new Date()}
+                  lastUpdated={floodData?.lastUpdated ? new Date(floodData.lastUpdated) : new Date()}
                 />
               </div>
 
@@ -83,26 +77,26 @@ export default function Home() {
             </div>
 
             {error && (
-              <div className="mt-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-                <p className="font-body text-sm text-yellow-900">
-                  <strong>Uyarı:</strong> API bağlantısı kurulamadı, varsayılan veriler gösterilmektedir.
+              <div className="mt-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+                <p className="font-body text-sm text-red-900">
+                  <strong>Hata:</strong> Sel verileri yüklenemedi. Lütfen internet bağlantınızı kontrol edin ve sayfayı yenileyin.
                 </p>
               </div>
             )}
 
-            {floodData?.data?.source === 'api' && (
+            {source === 'mock' && !error && (
+              <div className="mt-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                <p className="font-body text-sm text-yellow-900">
+                  <strong>Uyarı:</strong> Open-Meteo API'sine ulaşılamadı, geçici olarak örnek veriler gösterilmektedir.
+                </p>
+              </div>
+            )}
+
+            {(source === 'open-meteo' || source === 'api') && (
               <div className="mt-6 p-4 bg-green-50 border border-green-200 rounded-lg">
                 <p className="font-body text-sm text-green-900">
                   <strong>Canlı Veri:</strong> Veriler Open-Meteo GloFAS API'den alınmaktadır.
                   Nehir debisi verileri yaklaşık su seviyesine dönüştürülmüştür.
-                </p>
-              </div>
-            )}
-
-            {floodData?.data?.source === 'mock' && (
-              <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                <p className="font-body text-sm text-blue-900">
-                  <strong>Bilgilendirme:</strong> API'ye bağlanılamadı, demo amaçlı örnek veriler gösterilmektedir.
                 </p>
               </div>
             )}
