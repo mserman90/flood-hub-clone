@@ -5,27 +5,42 @@ import { httpBatchLink, TRPCClientError } from "@trpc/client";
 import { createRoot } from "react-dom/client";
 import superjson from "superjson";
 import App from "./App";
-import { getLoginUrl } from "./const";
 import "./index.css";
 
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       retry: false,
-      // GitHub Pages'te backend olmadigi icin hatalar sessizce yutulur
+    },
+    mutations: {
+      retry: false,
     },
   },
 });
 
 const redirectToLoginIfUnauthorized = (error: unknown) => {
-  if (!(error instanceof TRPCClientError)) return;
-  if (typeof window === "undefined") return;
+  try {
+    if (!(error instanceof TRPCClientError)) return;
+    if (typeof window === "undefined") return;
 
-  const isUnauthorized = error.message === UNAUTHED_ERR_MSG;
+    const isUnauthorized = error.message === UNAUTHED_ERR_MSG;
+    if (!isUnauthorized) return;
 
-  if (!isUnauthorized) return;
+    // VITE_OAUTH_PORTAL_URL tanimli degilse (GitHub Pages) sessizce cik
+    const oauthPortalUrl = import.meta.env.VITE_OAUTH_PORTAL_URL;
+    if (!oauthPortalUrl) return;
 
-  window.location.href = getLoginUrl();
+    const redirectUri = `${window.location.origin}/api/oauth/callback`;
+    const url = new URL(`${oauthPortalUrl}/app-auth`);
+    url.searchParams.set("appId", import.meta.env.VITE_APP_ID || '');
+    url.searchParams.set("redirectUri", redirectUri);
+    url.searchParams.set("state", btoa(redirectUri));
+    url.searchParams.set("type", "signIn");
+    window.location.href = url.toString();
+  } catch (e) {
+    // OAuth env degiskenleri eksik, sessizce atla
+    console.warn('[Auth] OAuth redirect atlanamadi:', e);
+  }
 };
 
 queryClient.getQueryCache().subscribe(event => {
@@ -44,7 +59,7 @@ queryClient.getMutationCache().subscribe(event => {
   }
 });
 
-// GitHub Pages'te backend olmadigi icin tam URL kullan (Invalid URL hatasini onler)
+// GitHub Pages'te tam origin URL kullan
 const API_BASE_URL = typeof window !== 'undefined'
   ? `${window.location.origin}/api/trpc`
   : '/api/trpc';
