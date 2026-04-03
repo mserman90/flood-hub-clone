@@ -1,116 +1,111 @@
-import { useAuth } from "@/_core/hooks/useAuth";
-import { FloodMap } from '@/components/FloodMap';
-import { FloodDataPanel } from '@/components/FloodDataPanel';
-import { WaterLevelChart } from '@/components/WaterLevelChart';
-import { useFloodData } from '@/hooks/useFloodData';
+import { useState, useCallback } from 'react';
+import { TopBar } from '@/components/TopBar';
+import { FloodMapLeaflet } from '@/components/FloodMapLeaflet';
+import { StationDetailPanel } from '@/components/StationDetailPanel';
+import { OptionsPanel } from '@/components/OptionsPanel';
+import { BottomWarningBar } from '@/components/BottomWarningBar';
+import { useMultiStationData, type StationData, type SeverityLevel } from '@/hooks/useMultiStationData';
 import { Loader2 } from 'lucide-react';
 
+const ALL_SEVERITIES = new Set<SeverityLevel>(['normal', 'uyari', 'tehlike', 'asiri', 'veri_yok']);
+
 export default function Home() {
-  const { user } = useAuth();
+  const { data: stations, isLoading, error } = useMultiStationData();
 
-  // Fetch flood data: tries tRPC backend first, falls back to direct Open-Meteo API
-  const { data: floodData, isLoading, error, source } = useFloodData();
+  // Panel state
+  const [selectedStation, setSelectedStation] = useState<StationData | null>(null);
+  const [optionsPanelOpen, setOptionsPanelOpen] = useState(false);
 
-  const waterLevelData = floodData?.waterLevelHistory || [];
-  const currentWaterLevel = floodData?.currentWaterLevel || 0;
-  const forecastedWaterLevel = floodData?.forecastedWaterLevel || 0;
-  const riskLevel = floodData?.riskLevel || 'low';
+  // Map state
+  const [mapType, setMapType] = useState<'harita' | 'karma'>('harita');
+  const [visibleSeverities, setVisibleSeverities] = useState<Set<SeverityLevel>>(new Set(ALL_SEVERITIES));
+
+  // Filter toggles
+  const [showFloodLayer, setShowFloodLayer] = useState(true);
+  const [showExtendedCoverage, setShowExtendedCoverage] = useState(false);
+  const [showSignificantEvents, setShowSignificantEvents] = useState(false);
+  const [showFloodProbability, setShowFloodProbability] = useState(false);
+
+  const handleStationClick = useCallback((stationData: StationData) => {
+    setSelectedStation(stationData);
+  }, []);
+
+  const handleCloseDetail = useCallback(() => {
+    setSelectedStation(null);
+  }, []);
+
+  const handleToggleSeverity = useCallback((severity: SeverityLevel) => {
+    setVisibleSeverities(prev => {
+      const next = new Set(prev);
+      if (next.has(severity)) {
+        next.delete(severity);
+      } else {
+        next.add(severity);
+      }
+      return next;
+    });
+  }, []);
+
+  // When flood layer is off, hide all markers
+  const effectiveVisibleSeverities = showFloodLayer ? visibleSeverities : new Set<SeverityLevel>();
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="border-b border-border bg-white sticky top-0 z-50">
-        <div className="container py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-blue-600 flex items-center justify-center">
-              <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
-                <path d="M10 2a8 8 0 100 16 8 8 0 000-16zm0 14a6 6 0 110-12 6 6 0 010 12z" />
-              </svg>
-            </div>
-            <div>
-              <h1 className="font-display text-xl text-slate-900">Flood Hub</h1>
-              <p className="font-body text-xs text-slate-600">Sel Tahmin Sistemi</p>
-            </div>
-          </div>
-          <div className="font-body text-xs text-slate-600">
-            <p>Ankara Bölgesi</p>
-            <p>38.6253°N, 35.7123°E</p>
-            {user && <p className="text-blue-600">Hoş geldiniz, {user.name}</p>}
-          </div>
+    <div className="flood-hub-app">
+      <TopBar />
+
+      <div className="flood-hub-main">
+        {/* Left panel - station detail */}
+        <div className={`left-panel ${selectedStation ? 'left-panel-open' : 'left-panel-closed'}`}>
+          {selectedStation && (
+            <StationDetailPanel
+              stationData={selectedStation}
+              onClose={handleCloseDetail}
+            />
+          )}
         </div>
-      </header>
 
-      {/* Main Content */}
-      <main className="container py-6">
-        {isLoading ? (
-          <div className="flex flex-col items-center justify-center gap-4 py-12">
-            <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
-            <p className="font-body text-slate-600">Sel verileri yükleniyor...</p>
-          </div>
-        ) : (
-          <>
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              {/* Left Panel - Data Information */}
-              <div className="lg:col-span-1">
-                <FloodDataPanel
-                  locationName="Ankara"
-                  currentWaterLevel={currentWaterLevel}
-                  forecastedWaterLevel={forecastedWaterLevel}
-                  riskLevel={riskLevel as 'low' | 'medium' | 'high' | 'critical'}
-                  lastUpdated={floodData?.lastUpdated ? new Date(floodData.lastUpdated) : new Date()}
-                />
-              </div>
-
-              {/* Center - Map */}
-              <div className="lg:col-span-2">
-                <FloodMap
-                  latitude={38.625278384355575}
-                  longitude={35.71231125704324}
-                  zoom={6.6389999971389795}
-                />
-              </div>
+        {/* Map area */}
+        <div className="map-area">
+          {isLoading ? (
+            <div className="map-loading">
+              <Loader2 className="animate-spin" size={32} />
+              <p>Sel verileri yükleniyor...</p>
             </div>
-
-            {/* Bottom - Chart */}
-            <div className="mt-6">
-              <WaterLevelChart data={waterLevelData} title="Su Seviyesi Geçmişi (Son 24 Saat)" />
+          ) : error ? (
+            <div className="map-error">
+              <p>Veriler yüklenirken hata oluştu. Lütfen sayfayı yenileyin.</p>
             </div>
+          ) : (
+            <FloodMapLeaflet
+              stations={stations || []}
+              selectedStationId={selectedStation?.station.id ?? null}
+              onStationClick={handleStationClick}
+              visibleSeverities={effectiveVisibleSeverities}
+              mapType={mapType}
+            />
+          )}
+        </div>
 
-            {error && (
-              <div className="mt-6 p-4 bg-red-50 border border-red-200 rounded-lg">
-                <p className="font-body text-sm text-red-900">
-                  <strong>Hata:</strong> Sel verileri yüklenemedi. Lütfen internet bağlantınızı kontrol edin ve sayfayı yenileyin.
-                </p>
-              </div>
-            )}
+        {/* Right panel - options */}
+        <OptionsPanel
+          isOpen={optionsPanelOpen}
+          onToggle={() => setOptionsPanelOpen(!optionsPanelOpen)}
+          mapType={mapType}
+          onMapTypeChange={setMapType}
+          visibleSeverities={visibleSeverities}
+          onToggleSeverity={handleToggleSeverity}
+          showFloodLayer={showFloodLayer}
+          onToggleFloodLayer={setShowFloodLayer}
+          showExtendedCoverage={showExtendedCoverage}
+          onToggleExtendedCoverage={setShowExtendedCoverage}
+          showSignificantEvents={showSignificantEvents}
+          onToggleSignificantEvents={setShowSignificantEvents}
+          showFloodProbability={showFloodProbability}
+          onToggleFloodProbability={setShowFloodProbability}
+        />
+      </div>
 
-            {source === 'mock' && !error && (
-              <div className="mt-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-                <p className="font-body text-sm text-yellow-900">
-                  <strong>Uyarı:</strong> Open-Meteo API'sine ulaşılamadı, geçici olarak örnek veriler gösterilmektedir.
-                </p>
-              </div>
-            )}
-
-            {(source === 'open-meteo' || source === 'api') && (
-              <div className="mt-6 p-4 bg-green-50 border border-green-200 rounded-lg">
-                <p className="font-body text-sm text-green-900">
-                  <strong>Canlı Veri:</strong> Veriler Open-Meteo GloFAS API'den alınmaktadır.
-                  Nehir debisi verileri yaklaşık su seviyesine dönüştürülmüştür.
-                </p>
-              </div>
-            )}
-
-            {/* Footer Info */}
-            <div className="mt-8 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-              <p className="font-body text-sm text-blue-900">
-                <strong>Bilgilendirme:</strong> Sel koşulları yaklaşıktır ve bilgilendirme amaçlıdır.
-                Daha fazla bilgi için resmi kaynakları kontrol edin.
-              </p>
-            </div>
-          </>
-        )}
-      </main>
+      <BottomWarningBar />
     </div>
   );
 }

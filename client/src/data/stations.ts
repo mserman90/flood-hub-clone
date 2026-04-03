@@ -1,0 +1,156 @@
+export interface Station {
+  id: string;
+  name: string;
+  latitude: number;
+  longitude: number;
+  basinSize: number; // km²
+  source: string;
+}
+
+// Realistic station points around Ankara and central Turkey region
+export const STATIONS: Station[] = [
+  {
+    id: 'hybas_2120644990',
+    name: 'Ankara - Sakarya Nehri',
+    latitude: 39.93,
+    longitude: 32.86,
+    basinSize: 1245,
+    source: 'HYBAS',
+  },
+  {
+    id: 'hybas_2120645120',
+    name: 'Kızılırmak - Kırıkkale',
+    latitude: 39.85,
+    longitude: 33.52,
+    basinSize: 3420,
+    source: 'HYBAS',
+  },
+  {
+    id: 'hybas_2120645230',
+    name: 'Sakarya - Eskişehir',
+    latitude: 39.78,
+    longitude: 30.52,
+    basinSize: 2180,
+    source: 'HYBAS',
+  },
+  {
+    id: 'hybas_2120645340',
+    name: 'Kızılırmak - Çankırı',
+    latitude: 40.60,
+    longitude: 33.62,
+    basinSize: 4560,
+    source: 'HYBAS',
+  },
+  {
+    id: 'hybas_2120645450',
+    name: 'Sakarya - Bolu',
+    latitude: 40.73,
+    longitude: 31.61,
+    basinSize: 1890,
+    source: 'HYBAS',
+  },
+  {
+    id: 'hybas_2120645560',
+    name: 'Kızılırmak - Yozgat',
+    latitude: 39.77,
+    longitude: 34.80,
+    basinSize: 2750,
+    source: 'HYBAS',
+  },
+  {
+    id: 'hybas_2120645670',
+    name: 'Porsuk Çayı - Kütahya',
+    latitude: 39.42,
+    longitude: 29.98,
+    basinSize: 1560,
+    source: 'HYBAS',
+  },
+  {
+    id: 'hybas_2120645780',
+    name: 'Delice Irmağı - Kırşehir',
+    latitude: 39.15,
+    longitude: 34.17,
+    basinSize: 980,
+    source: 'HYBAS',
+  },
+  {
+    id: 'hybas_2120645890',
+    name: 'Sakarya - Düzce',
+    latitude: 40.84,
+    longitude: 31.17,
+    basinSize: 2340,
+    source: 'HYBAS',
+  },
+  {
+    id: 'hybas_2120646000',
+    name: 'Kızılırmak - Sivas',
+    latitude: 39.75,
+    longitude: 37.02,
+    basinSize: 5120,
+    source: 'HYBAS',
+  },
+  {
+    id: 'hybas_2120646110',
+    name: 'Çekerek Çayı - Tokat',
+    latitude: 40.31,
+    longitude: 36.55,
+    basinSize: 1430,
+    source: 'HYBAS',
+  },
+  {
+    id: 'hybas_2120646220',
+    name: 'Ankara Çayı - Polatlı',
+    latitude: 39.58,
+    longitude: 32.15,
+    basinSize: 870,
+    source: 'HYBAS',
+  },
+  {
+    id: 'hybas_2120646330',
+    name: 'Sakarya - Bilecik',
+    latitude: 40.05,
+    longitude: 30.00,
+    basinSize: 1670,
+    source: 'HYBAS',
+  },
+  {
+    id: 'hybas_2120646440',
+    name: 'Kızılırmak - Amasya',
+    latitude: 40.65,
+    longitude: 35.83,
+    basinSize: 3890,
+    source: 'HYBAS',
+  },
+  {
+    id: 'hybas_2120646550',
+    name: 'Devrez Çayı - Kastamonu',
+    latitude: 41.38,
+    longitude: 33.78,
+    basinSize: 1120,
+    source: 'HYBAS',
+  },
+  {
+    id: 'hybas_2120646660',
+    name: 'Sakarya - Mudurnu',
+    latitude: 40.47,
+    longitude: 31.18,
+    basinSize: 1450,
+    source: 'HYBAS',
+  },
+  {
+    id: 'hybas_2120646770',
+    name: 'Kızılırmak - Nevşehir',
+    latitude: 38.62,
+    longitude: 34.71,
+    basinSize: 2100,
+    source: 'HYBAS',
+  },
+  {
+    id: 'hybas_2120646880',
+    name: 'Kelkit Çayı - Tokat',
+    latitude: 40.18,
+    longitude: 36.98,
+    basinSize: 2560,
+    source: 'HYBAS',
+  },
+];
