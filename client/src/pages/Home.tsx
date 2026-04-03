@@ -85,7 +85,16 @@ export default function Home() {
             {error && (
               <div className="mt-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
                 <p className="font-body text-sm text-yellow-900">
-                  <strong>Uyarı:</strong> Gerçek veriler yüklenemedi, mock veriler gösterilmektedir.
+                  <strong>Uyarı:</strong> API bağlantısı kurulamadı, varsayılan veriler gösterilmektedir.
+                </p>
+              </div>
+            )}
+
+            {floodData?.data?.source === 'api' && (
+              <div className="mt-6 p-4 bg-green-50 border border-green-200 rounded-lg">
+                <p className="font-body text-sm text-green-900">
+                  <strong>Canlı Veri:</strong> Veriler Open-Meteo GloFAS API'den alınmaktadır.
+                  Nehir debisi verileri yaklaşık su seviyesine dönüştürülmüştür.
                 </p>
               </div>
             )}
@@ -93,8 +102,7 @@ export default function Home() {
             {floodData?.data?.source === 'mock' && (
               <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
                 <p className="font-body text-sm text-blue-900">
-                  <strong>Bilgilendirme:</strong> Bu sistem şu anda demo amaçlı mock veriler kullanmaktadır.
-                  Gerçek sel tahmin verileri için Open-Meteo API veya Google Flood Forecasting API entegrasyonu yapılabilir.
+                  <strong>Bilgilendirme:</strong> API'ye bağlanılamadı, demo amaçlı örnek veriler gösterilmektedir.
                 </p>
               </div>
             )}

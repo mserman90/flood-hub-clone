@@ -56,29 +56,44 @@ function calculateRiskFromWaterLevel(waterLevel: number): RiskLevel {
 }
 
 /**
+ * Convert river discharge (m³/s) to approximate water level (meters)
+ */
+function dischargeToWaterLevel(discharge: number): number {
+  if (discharge <= 0) return 0.5;
+  const level = 0.5 + Math.pow(discharge / 10, 0.4);
+  return parseFloat(level.toFixed(2));
+}
+
+/**
  * Bir bolge icin guncel flood verisini getir
- * Production: Open-Meteo GloFAS veya TATUS API entegrasyonu
+ * Open-Meteo GloFAS API kullanir, hata durumunda simulasyona doner
  */
 async function fetchRegionFloodData(
   region: MonitoredRegion
 ): Promise<{ waterLevel: number; riskLevel: RiskLevel }> {
   try {
-    // ----- PRODUCTION: Open-Meteo GloFAS entegrasyonu -----
-    // const url = `https://flood-api.open-meteo.com/v1/flood` +
-    //   `?latitude=${region.latitude}&longitude=${region.longitude}` +
-    //   `&daily=river_discharge_max&forecast_days=1`;
-    // const response = await fetch(url);
-    // const data = await response.json();
-    // const discharge = data.daily?.river_discharge_max?.[0] || 0;
-    // const waterLevel = dischargeToWaterLevel(discharge);
-    // return { waterLevel, riskLevel: calculateRiskFromWaterLevel(waterLevel) };
+    // Open-Meteo GloFAS API'den gercek veri cek
+    const url = `https://flood-api.open-meteo.com/v1/flood` +
+      `?latitude=${region.latitude}&longitude=${region.longitude}` +
+      `&daily=river_discharge_mean,river_discharge_max&forecast_days=1`;
+    const response = await fetch(url);
 
-    // ----- GELISTIRME: Simulasyon (zaman bazli dalgalanma) -----
+    if (!response.ok) {
+      throw new Error(`API error: ${response.status}`);
+    }
+
+    const data = await response.json();
+    const discharge = data.daily?.river_discharge_mean?.[0] || 0;
+    const waterLevel = dischargeToWaterLevel(discharge);
+    return { waterLevel, riskLevel: calculateRiskFromWaterLevel(waterLevel) };
+  } catch (error) {
+    console.error(`[FLOOD-JOB] ${region.name} API verisi alinamadi, simulasyona donuluyor:`, error);
+
+    // Fallback: simulasyon
     const hour = new Date().getHours();
     const minute = new Date().getMinutes();
     const seed = (region.latitude * 100 + region.longitude) % 7;
     const baseLevel = 2.0 + (seed * 0.3);
-    // Zaman bazli dalgalanma + rastgele ek
     const timeVariation = Math.sin((hour * 60 + minute) / 180) * 1.2;
     const noise = Math.sin(Date.now() / 120000 + seed) * 0.4;
     const waterLevel = Math.max(0.5, baseLevel + timeVariation + noise);
@@ -87,9 +102,6 @@ async function fetchRegionFloodData(
       waterLevel: parseFloat(waterLevel.toFixed(2)),
       riskLevel: calculateRiskFromWaterLevel(waterLevel),
     };
-  } catch (error) {
-    console.error(`[FLOOD-JOB] ${region.name} verisi alinamadi:`, error);
-    return { waterLevel: 0, riskLevel: 'low' };
   }
 }
 
