@@ -9,9 +9,8 @@ import { Bell, BellOff, AlertTriangle, MapPin, RefreshCw, Trash2, Shield } from 
 import { FloodAlertSubscribe } from '../components/FloodAlertSubscribe';
 import { useFloodAlerts } from '../hooks/useFloodAlerts';
 import type { RiskLevel } from '../services/notificationService';
-import { DEFAULT_MONITORED_REGIONS } from '../../server/jobs/floodRiskJob';
 
-// Ornek olarak frontend sabitleri kullan (server import yerine)
+// Frontend sabitleri - izlenen bolgeler
 const MONITORED_REGIONS = [
   { id: 'ankara-cubuk', name: 'Cubuk Cayi (Ankara)', latitude: 40.2316, longitude: 33.0302 },
   { id: 'istanbul-kagithane', name: 'Kagithane Deresi (Istanbul)', latitude: 41.0736, longitude: 28.9778 },

@@ -121,13 +121,15 @@ async function sendAlertsForEscalations(
   if (escalations.length === 0) return;
 
   try {
-    // notificationsRouter.broadcastFloodAlerts'i dogrudan cagir
+    // notificationsRouter'dan broadcastFloodAlerts'i dogrudan cagir
     const { notificationsRouter } = await import('../routers/notifications');
+    const { router } = await import('../_core/trpc');
 
-    // tRPC caller olustur
-    const { createCallerFactory } = await import('../_core/trpc');
-    const createCaller = createCallerFactory(notificationsRouter);
-    const caller = createCaller({} as never);
+    // Basit bir caller olustur (context olmadan)
+    const appRouter = router({
+      notifications: notificationsRouter,
+    });
+    const caller = appRouter.createCaller({} as never);
 
     const alerts = escalations.map((r) => ({
       regionId: r.regionId,
@@ -136,7 +138,7 @@ async function sendAlertsForEscalations(
       waterLevel: r.waterLevel,
     }));
 
-    const result = await caller.broadcastFloodAlerts({ alerts });
+    const result = await caller.notifications.broadcastFloodAlerts({ alerts });
     console.log('[FLOOD-JOB] Bildirimler gonderildi:', result.results);
   } catch (error) {
     // tRPC caller yoksa HTTP fallback
