@@ -13,6 +13,7 @@ import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
 import { trpc } from '@/lib/trpc';
+import { APIStatusPanel } from '@/components/APIStatusPanel';
 
 type NotificationMode = 'instant' | 'daily' | 'weekly' | 'disabled';
 type RiskLevel = 'low' | 'medium' | 'high' | 'critical';
@@ -374,6 +375,9 @@ export default function Settings() {
               )}
             </CardContent>
           </Card>
+
+          {/* API Saglik Durumu */}
+          <APIStatusPanel />
 
           {/* İşlem Butonları */}
           <div className="flex gap-3 pt-4">
