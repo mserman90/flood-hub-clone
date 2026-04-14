@@ -6,6 +6,7 @@ import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import Home from "./pages/Home";
 import Alerts from "./pages/Alerts";
+import Settings from "./pages/Settings";
 import { useEffect } from "react";
 
 // Service Worker kaydi - Sel uyari sistemi icin
@@ -28,6 +29,7 @@ function AppRoutes() {
     <Switch>
       <Route path="/" component={Home} />
       <Route path="/alerts" component={Alerts} />
+      <Route path="/settings" component={Settings} />
       <Route path="/404" component={NotFound} />
       {/* Final fallback route */}
       <Route component={NotFound} />

@@ -76,3 +76,31 @@ export const notificationLogs = mysqlTable("notificationLogs", {
 
 export type NotificationLog = typeof notificationLogs.$inferSelect;
 export type InsertNotificationLog = typeof notificationLogs.$inferInsert;
+/**
+ * Notification Preferences - Kullanici bildirim tercihleri
+ */
+export const notificationPreferences = mysqlTable("notificationPreferences", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull().unique(),
+  // Bildirim modu: instant (anlık), daily (günlük özet), weekly (haftalık özet), disabled (kapalı)
+  notificationMode: mysqlEnum("notificationMode", ["instant", "daily", "weekly", "disabled"]).default("instant").notNull(),
+  // Hangi kanallarda bildirim alacak
+  enablePush: boolean("enablePush").default(true).notNull(),
+  enableEmail: boolean("enableEmail").default(false).notNull(),
+  enableInApp: boolean("enableInApp").default(true).notNull(),
+  // Bildirim zamanı (günlük/haftalık özet için)
+  summaryTime: varchar("summaryTime", { length: 5 }).default("09:00"), // HH:mm format
+  summaryDay: mysqlEnum("summaryDay", ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"]).default("monday"), // Haftalık özet için
+  // Bildirim seviyeleri
+  minRiskLevel: mysqlEnum("minRiskLevel", ["low", "medium", "high", "critical"]).default("high").notNull(),
+  // Sessiz saatler (bildirim gönderme)
+  quietHoursEnabled: boolean("quietHoursEnabled").default(false).notNull(),
+  quietHoursStart: varchar("quietHoursStart", { length: 5 }).default("22:00"), // HH:mm format
+  quietHoursEnd: varchar("quietHoursEnd", { length: 5 }).default("08:00"), // HH:mm format
+  // Tercihler
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type NotificationPreference = typeof notificationPreferences.$inferSelect;
+export type InsertNotificationPreference = typeof notificationPreferences.$inferInsert;
